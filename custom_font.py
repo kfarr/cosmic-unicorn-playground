@@ -205,7 +205,7 @@ while True:
 
 
     make_text(timer_text, 0, 0)
+    print_string(timer_text, 0, 8)
     print_string(text, 0, 16)
-    print_char("<", 0, 7)
 
     cu.update(graphics)
