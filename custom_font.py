@@ -15,6 +15,106 @@ graphics = PicoGraphics(DISPLAY)
 width = CosmicUnicorn.WIDTH
 height = CosmicUnicorn.HEIGHT
 
+# BITMAP 2x5 FONT
+# ASCII Character Set 
+bitmapFont2x5 = [
+        '0000000000', #Space
+        '0101010001', #!
+        '0000000000', #"
+        '0000000000', ##
+        '0000000000', #$
+        '0000000000', #%
+        '0000000000', #&
+        '0100000000', #'
+        '0000000000', #(
+        '0000000000', #)
+        '0000000000', #*
+        '0000000000', #+
+        '0000010110', #,
+        '0000110000', #-
+        '0000000010', #.
+        '0000000000', #/
+        '1111111111', #0
+        '0101010101', #1
+        '1101111011', #2
+        '1101110111', #3
+        '1010110101', #4
+        '1110110111', #5
+        '1010111111', #6
+        '1101010101', #7
+        '1111001111', #8
+        '1111110101', #9
+        '0001000100', #:
+        '0001000110', #;
+        '0001100100', #<
+        '0011001100', #=
+        '0010011000', #>
+        '1101111000', #?
+        '0000000000', #@
+        '0000000000', #A
+        '0000000000', #B
+        '0000000000', #C
+        '0000000000', #D
+        '0000000000', #E
+        '0000000000', #F
+        '0000000000', #G
+        '0000000000', #H
+        '0000000000', #I
+        '0000000000', #J
+        '0000000000', #K
+        '0000000000', #L
+        '0000000000', #M
+        '0000000000', #N
+        '0000000000', #O
+        '0000000000', #P
+        '0000000000', #Q
+        '0000000000', #R
+        '0000000000', #S
+        '0000000000', #T
+        '0000000000', #U
+        '0000000000', #V
+        '0000000000', #W
+        '0000000000', #X
+        '0000000000', #Y
+        '0000000000', #Z
+        '0000000000', #[
+        '0000000000', #\
+        '0000000000', #]
+        '0000000000', #^
+        '0000000000', #_
+        '0000000000', #`
+        '0000000000', #a
+        '0000000000', #b
+        '0000000000', #c
+        '0000000000', #d
+        '0000000000', #e
+        '0000000000', #f
+        '0000000000', #g
+        '0000000000', #h
+        '0000000000', #i
+        '0000000000', #j
+        '0000000000', #k
+        '0000000000', #l
+        '0000000000', #m
+        '0000000000', #n
+        '0000000000', #o
+        '0000000000', #p
+        '0000000000', #q
+        '0000000000', #r
+        '0000000000', #s
+        '0000000000', #t
+        '0000000000', #u
+        '0000000000', #v
+        '0000000000', #w
+        '0000000000', #x
+        '0000000000', #y
+        '0000000000', #z
+        '0000000000', #{
+        '0000000000', #|
+        '0000000000', #}
+        '0000000000' #}~
+]
+
 # BITMAP 5x9 FONT
 # ASCII Character Set 
 bitmapFont5x9 = [
@@ -121,7 +221,32 @@ def make_text(text, x, y):
     graphics.text(text, x, y, -1, 1)
 
 
-def print_char(letter,xpos,ypos,size=1):
+def print_char2x5(letter,xpos,ypos,size=1):
+    graphics.set_pen(graphics.create_pen(255, 255, 255))
+
+    origin = xpos
+    charval = ord(letter)
+    #print(charval)
+    index = charval-32 #start code, 32 or space
+    #print(index)
+    character = bitmapFont2x5[index] #this is our char...
+    rows = [character[i:i+2] for i in range(0,len(character),2)]
+    #print(rows)
+    for row in rows:
+        #print(row)
+        for bit in row:
+            #print(bit)
+            if bit == '1':
+                graphics.pixel(xpos,ypos)
+                if size==2:
+                    graphics.pixel(xpos,ypos+1)
+                    graphics.pixel(xpos+1,ypos)
+                    graphics.pixel(xpos+1,ypos+1)
+            xpos+=size
+        xpos=origin
+        ypos+=size
+
+def print_char5x9(letter,xpos,ypos,size=1):
     graphics.set_pen(graphics.create_pen(255, 255, 255))
 
     origin = xpos
@@ -145,19 +270,29 @@ def print_char(letter,xpos,ypos,size=1):
             xpos+=size
         xpos=origin
         ypos+=size
-#    display.update()
 
-def print_string(string,xpos,ypos,size=1):
+
+def print_string2x5(string,xpos,ypos,size=1):
+    if size == 2:
+        spacing = 6
+    else:
+        spacing = 3
+    for i in string:
+        print_char2x5(i,xpos,ypos,size)
+        xpos+=spacing
+    
+def print_string5x9(string,xpos,ypos,size=1):
     if size == 2:
         spacing = 12
     else:
         spacing = 6
     for i in string:
-        print_char(i,xpos,ypos,size)
+        print_char5x9(i,xpos,ypos,size)
         xpos+=spacing
-    
 
 cu.set_brightness(0.5)
+
+paused = 0
 
 while True:
 
@@ -174,7 +309,8 @@ while True:
 
     text = "<--"
     timer_text = str(time_ms)[3:]
-
+    if paused:
+        timer_text = "0123456789"
 
     if cu.is_pressed(CosmicUnicorn.SWITCH_A):
         text = "A"
@@ -183,10 +319,12 @@ while True:
         text = "B"
 
     if cu.is_pressed(CosmicUnicorn.SWITCH_C):
-        text = "C"
+        text = "Play"
+        paused = 0
 
     if cu.is_pressed(CosmicUnicorn.SWITCH_D):
-        text = "D"
+        text = "Pause"
+        paused = 1
 
     if cu.is_pressed(CosmicUnicorn.SWITCH_VOLUME_UP):
         text = "Louder!"
@@ -204,8 +342,10 @@ while True:
         text = "Zzz... zzz..."
 
 
-    make_text(timer_text, 0, 0)
-    print_string(timer_text, 0, 8)
-    print_string(text, 0, 16)
-
+    make_text(timer_text, 0, -1)
+    print_string2x5(timer_text, 0, 7)
+    print_string5x9(timer_text, 0, 14)
+    print_string5x9(text, 6, 22)
+    print_char2x5("-",(time_ms // 1000) % 2,21)
+    print_char2x5("-",(time_ms // 1000) % 2,23)
     cu.update(graphics)
