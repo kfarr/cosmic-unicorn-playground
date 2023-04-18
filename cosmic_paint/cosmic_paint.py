@@ -21,7 +21,12 @@ print(f"Start painting at: http://{ip}")
 
 server = Microdot()
 
-
+graphics.set_pen(graphics.create_pen(50, 50, 50))
+graphics.set_font("bitmap6")
+graphics.text(ip[:7], 0, 0, wordwrap=16, scale=1)
+graphics.text(ip[7:], 0, 10, wordwrap=16, scale=1)
+cu.update(graphics)
+  
 @server.route("/", methods=["GET"])
 def route_index(request):
     return send_file("cosmic_paint/index.html")
