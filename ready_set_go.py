@@ -66,6 +66,27 @@ def outline_text(text):
     graphics.set_pen(graphics.create_pen(v, v, v))
     graphics.text(text, x, y, -1, 1)
 
+def outline_text_lower(text):
+    graphics.set_font("bitmap6")
+
+    w = graphics.measure_text(text, 1)
+
+    # x = int(32 / 2 - w / 2 + 1)
+    x = 1
+    y = 26
+
+    graphics.set_pen(0)
+    graphics.text(text, x - 1, y - 1, -1, 1)
+    graphics.text(text, x, y - 1, -1, 1)
+    graphics.text(text, x + 1, y - 1, -1, 1)
+    graphics.text(text, x - 1, y, -1, 1)
+    graphics.text(text, x + 1, y, -1, 1)
+    graphics.text(text, x - 1, y + 1, -1, 1)
+    graphics.text(text, x, y + 1, -1, 1)
+    graphics.text(text, x + 1, y + 1, -1, 1)
+
+    graphics.set_pen(graphics.create_pen(255, 255, 255))
+    graphics.text(text, x, y, -1, 1)
 
 cu.set_brightness(0.5)
 
@@ -85,6 +106,7 @@ while True:
     graphics.clear()
 
     text = ""
+    timer_text = str(time_ms)[3:]
 
     if seconds == 0:
         print("grid pattern")
@@ -142,5 +164,6 @@ while True:
         text = "Zzz... zzz..."
 
     outline_text(text)
+    outline_text_lower(timer_text)
 
     cu.update(graphics)
