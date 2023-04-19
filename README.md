@@ -6,6 +6,9 @@ Credit:
 * https://github.com/NiVZ78/galactic_unicorn_custom_font for improved bitmap font parser and definition format
 
 
+===
+Original readme:
+
 - [About Cosmic Unicorn](#about-cosmic-unicorn)
 - [Cosmic Unicorn and PicoGraphics](#cosmic-unicorn-and-picographics)
 - [Examples](#examples)
