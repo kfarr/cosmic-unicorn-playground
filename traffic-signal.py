@@ -61,7 +61,7 @@ def draw_signal_head(x, y, lamp="none"):
         graphics.set_pen(graphics.create_pen(0, 255, 0))
     graphics.pixel(x, y + 2)
         
-def draw_row(n, y, state):
+def draw_row(n, y, state, state_ped):
     # ROW LABEL
     graphics.set_pen(graphics.create_pen(100, 100, 100))
     draw_char(str(n), 0, y, font3x5)
@@ -83,11 +83,15 @@ def draw_row(n, y, state):
     draw_signal_head(23, 2 + y, state)
 
     # PED SYMBOL
-    if state == "G":
+    if state_ped == "W":
         graphics.set_pen(graphics.create_pen(255, 255, 255))
         draw_char("🚶", 5, y, font3x5)
-    if state == "R":
+    if state_ped == "R":
         graphics.set_pen(graphics.create_pen(255, 0, 0))
+        draw_char("✋", 5, y, font3x5)
+    if state_ped == "F":
+        invert_flash = 1 - (time_ms // 500) % 2
+        graphics.set_pen(graphics.create_pen(255 * invert_flash, 0, 0))
         draw_char("✋", 5, y, font3x5)
 # MAIN LOOP
 while True:
@@ -98,7 +102,7 @@ while True:
     graphics.set_pen(graphics.create_pen(0, 0, 0))
     graphics.clear()
 
-    text = "✋🚶"
+    text = ""
     timer_text = str(time_ms)[3:]
     if paused:
         timer_text = "0123456789"
@@ -125,34 +129,29 @@ while True:
 
     if cu.is_pressed(CosmicUnicorn.SWITCH_BRIGHTNESS_UP):
         cu.adjust_brightness(+0.01)
-        text = "Brighter!"
+        text = "Brite" + str(round(cu.get_brightness(),2))
 
     if cu.is_pressed(CosmicUnicorn.SWITCH_BRIGHTNESS_DOWN):
         cu.adjust_brightness(-0.01)
-        text = "Darker"
+        text = "Dark" + str(round(cu.get_brightness(),2))
 
     if cu.is_pressed(CosmicUnicorn.SWITCH_SLEEP):
-        text = "Zzz... zzz..."
+        text = "Zzz..."
 
+    phase2_timing = "GGGGGGGGGGGGGGGGGGGGYYYYRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR"
+    phase2p_timing = "WWWWWFFFFFFFFFFFFFFRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRWW"
+    phase4_timing = "RRRRRRRRRRRRRRRRRRRRRRRRRRRRGGGGGGGGGGGGGGGGGGGGGGGYYYYRRRRR"
+    phase4p_timing = "RRRRRRRRRRRRRRRRRRRRRRRRRRWWWWWWWWWFFFFFFFFFFFFFFFRRRRRRRRRR"
 
-    draw_row(2, 1, "G")
+    draw_row(2, 1, phase2_timing[cycle_seconds], phase2p_timing[cycle_seconds])
 
-    draw_row(4, 9, "R")
+    draw_row(4, 9, phase4_timing[cycle_seconds], phase4p_timing[cycle_seconds])
     
     graphics.set_pen(graphics.create_pen(100, 100, 100))
 
     draw_text(str(cycle_seconds),32,27,font3x5,-1)
+    draw_text(text.upper(),0,20,font3x5)
 
-#     draw_text(timer_text,0,16,font5x9)
-
-    draw_text(text.upper(),6,26,font3x5)
-
-#     if paused:
-#         graphics.set_pen(graphics.create_pen(255, 0, 0))
-#         draw_char("-",(time_ms // 1000) % 2,21,font3x5)
-#     else:
-#         graphics.set_pen(graphics.create_pen(0, 255, 0))
-#         draw_char("-",(time_ms // 1000) % 2,23,font3x5)
 
     cu.update(graphics)
 
