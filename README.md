@@ -1,7 +1,10 @@
 # Fork of [Cosmic Unicorn MicroPython Examples](https://github.com/pimoroni/pimoroni-pico/tree/main/micropython/examples/cosmic_unicorn) <!-- omit in toc -->
  
-## Credit
-Credit to https://github.com/leswright1977/picofont for original custom font example
+## Custom Bitmap Fonts for Cosmic Unicorn
+Credit:
+* https://github.com/leswright1977/picofont for 5x9 custom bitmap font example
+* https://github.com/NiVZ78/galactic_unicorn_custom_font for improved bitmap font parser and definition format
+
 
 - [About Cosmic Unicorn](#about-cosmic-unicorn)
 - [Cosmic Unicorn and PicoGraphics](#cosmic-unicorn-and-picographics)
