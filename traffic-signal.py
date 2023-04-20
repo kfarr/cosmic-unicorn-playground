@@ -41,8 +41,6 @@ def draw_text(s,x,y,f,d=1):
             draw_char(s[i],x,y,f)
             x -= f[s[i]]["s"]
 
-paused = 0
-
 # SIGNAL HEAD FUNCTION
 def draw_signal_head(x, y, lamp="none"):
     # R
@@ -61,14 +59,15 @@ def draw_signal_head(x, y, lamp="none"):
         graphics.set_pen(graphics.create_pen(0, 255, 0))
     graphics.pixel(x, y + 2)
         
-def draw_row(n, y, state, state_ped):
+def draw_signal_row(n, y, state, state_ped):
     # ROW LABEL
     graphics.set_pen(graphics.create_pen(100, 100, 100))
     draw_char(str(n), 0, y, font3x5)
 
     # PED COUNTER BG
-    graphics.set_pen(graphics.create_pen(15, 0, 0))
-    draw_text("00", 10, y, font2x5)
+    if state_ped:
+        graphics.set_pen(graphics.create_pen(15, 0, 0))
+        draw_text("00", 10, y, font2x5)
     
     # SIGNALS MAST
     graphics.set_pen(graphics.create_pen(50, 50, 50))
@@ -93,6 +92,32 @@ def draw_row(n, y, state, state_ped):
         invert_flash = 1 - (time_ms // 500) % 2
         graphics.set_pen(graphics.create_pen(255 * invert_flash, 0, 0))
         draw_char("✋", 5, y, font3x5)
+
+def ped_timing_count_Fs(s):
+    start_index = s.find('F')
+    end_index = s.rfind('F')
+    count = s.count('F')
+
+    return count, start_index, end_index
+
+def ped_timer_string(count, start_index, end_index, cycle_seconds):
+    if cycle_seconds < start_index or cycle_seconds > end_index:
+        return ""
+    else:
+        return str(end_index - cycle_seconds)
+
+
+
+# INITIAL STATE
+paused = 0
+scene = 'A'
+
+# TIMING
+phase2_timing = "GGGGGGGGGGGGGGGGGGGGYYYYRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR"
+phase2p_timing = "WWWWWFFFFFFFFFFFFFFRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRWW"
+phase4_timing = "RRRRRRRRRRRRRRRRRRRRRRRRRRRRGGGGGGGGGGGGGGGGGGGGGGGYYYYRRRRR"
+phase4p_timing = "RRRRRRRRRRRRRRRRRRRRRRRRRRWWWWWWWWWFFFFFFFFFFFFFFFRRRRRRRRRR"
+
 # MAIN LOOP
 while True:
     time_ms = time.ticks_ms()
@@ -108,10 +133,12 @@ while True:
         timer_text = "0123456789"
 
     if cu.is_pressed(CosmicUnicorn.SWITCH_A):
-        text = "A"
+        text = "Scene A"
+        scene = 'A'
 
     if cu.is_pressed(CosmicUnicorn.SWITCH_B):
-        text = "B"
+        text = "Scene B"
+        scene = 'B'
 
     if cu.is_pressed(CosmicUnicorn.SWITCH_C):
         text = "Play"
@@ -138,20 +165,42 @@ while True:
     if cu.is_pressed(CosmicUnicorn.SWITCH_SLEEP):
         text = "Zzz..."
 
-    phase2_timing = "GGGGGGGGGGGGGGGGGGGGYYYYRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR"
-    phase2p_timing = "WWWWWFFFFFFFFFFFFFFRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRWW"
-    phase4_timing = "RRRRRRRRRRRRRRRRRRRRRRRRRRRRGGGGGGGGGGGGGGGGGGGGGGGYYYYRRRRR"
-    phase4p_timing = "RRRRRRRRRRRRRRRRRRRRRRRRRRWWWWWWWWWFFFFFFFFFFFFFFFRRRRRRRRRR"
+    if scene == 'A':
+        # DRAW SIGNALS
+        draw_signal_row(2, 1, phase2_timing[cycle_seconds], phase2p_timing[cycle_seconds])
+        draw_signal_row(4, 26, phase4_timing[cycle_seconds], phase4p_timing[cycle_seconds])
+        # PED COUNTERS
+        graphics.set_pen(graphics.create_pen(255, 0, 0))
+        count, start_index, end_index = ped_timing_count_Fs(phase2p_timing)
+        draw_text(ped_timer_string(count, start_index, end_index, cycle_seconds),15,1,font2x5,-1)
+        count4, start_index4, end_index4 = ped_timing_count_Fs(phase4p_timing)
+        draw_text(ped_timer_string(count4, start_index4, end_index4, cycle_seconds),15,26,font2x5,-1)
+        # GLOBAL TIMER
+        graphics.set_pen(graphics.create_pen(100, 100, 100))
+        draw_text(str(cycle_seconds),32,13,font3x5,-1)
+    if scene == 'B':
+        draw_signal_row(' ', 26, phase2_timing[cycle_seconds],'')
+        # RED
+        graphics.set_pen(graphics.create_pen(15, 0, 0))
+        if phase2_timing[cycle_seconds] == 'R':
+            graphics.set_pen(graphics.create_pen(255, 0, 0))
+        graphics.circle(25, 6, 6)
+        # YELLOW
+        graphics.set_pen(graphics.create_pen(15, 15, 0))
+        if phase2_timing[cycle_seconds] == 'Y':
+            graphics.set_pen(graphics.create_pen(255, 255, 0))
+        graphics.circle(15, 16, 6)
+        # GREEN
+        graphics.set_pen(graphics.create_pen(0, 15, 0))
+        if phase2_timing[cycle_seconds] == 'G':
+            graphics.set_pen(graphics.create_pen(0, 255, 0))
+        graphics.circle(6, 25, 6)
+        # GLOBAL TIMER
+        graphics.set_pen(graphics.create_pen(50, 50, 50))
+        draw_text(str(cycle_seconds),32,27,font3x5,-1)
 
-    draw_row(2, 1, phase2_timing[cycle_seconds], phase2p_timing[cycle_seconds])
-
-    draw_row(4, 26, phase4_timing[cycle_seconds], phase4p_timing[cycle_seconds])
-    
-    graphics.set_pen(graphics.create_pen(100, 100, 100))
-
-    draw_text(str(cycle_seconds),32,0,font3x5,-1)
+    # STATUS TEXT
     draw_text(text.upper(),0,20,font3x5)
-
 
     cu.update(graphics)
 
