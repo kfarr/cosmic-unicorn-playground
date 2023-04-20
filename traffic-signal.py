@@ -12,7 +12,7 @@ graphics = PicoGraphics(DISPLAY)
 width = CosmicUnicorn.WIDTH
 height = CosmicUnicorn.HEIGHT
 
-cu.set_brightness(0.3)
+cu.set_brightness(0.8)
 
 # DRAW A SINGLE BITMAP FONT CHARACTER
 @micropython.native  # noqa: F821
@@ -145,11 +145,11 @@ while True:
 
     draw_row(2, 1, phase2_timing[cycle_seconds], phase2p_timing[cycle_seconds])
 
-    draw_row(4, 9, phase4_timing[cycle_seconds], phase4p_timing[cycle_seconds])
+    draw_row(4, 26, phase4_timing[cycle_seconds], phase4p_timing[cycle_seconds])
     
     graphics.set_pen(graphics.create_pen(100, 100, 100))
 
-    draw_text(str(cycle_seconds),32,27,font3x5,-1)
+    draw_text(str(cycle_seconds),32,0,font3x5,-1)
     draw_text(text.upper(),0,20,font3x5)
 
 
