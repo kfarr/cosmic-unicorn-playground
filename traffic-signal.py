@@ -141,12 +141,12 @@ while True:
         scene = 'B'
 
     if cu.is_pressed(CosmicUnicorn.SWITCH_C):
-        text = "Play"
-        paused = 0
+        text = "Scene C"
+        scene = 'C'
 
     if cu.is_pressed(CosmicUnicorn.SWITCH_D):
-        text = "Pause"
-        paused = 1
+        text = "Scene D"
+        scene = 'D'
 
     if cu.is_pressed(CosmicUnicorn.SWITCH_VOLUME_UP):
         text = "Louder!"
@@ -198,7 +198,36 @@ while True:
         # GLOBAL TIMER
         graphics.set_pen(graphics.create_pen(50, 50, 50))
         draw_text(str(cycle_seconds),32,27,font3x5,-1)
+    if scene == 'C':
+        draw_signal_row(' ', 26, phase2_timing[cycle_seconds],'')
+        # RED
+        graphics.set_pen(graphics.create_pen(15, 0, 0))
+        if phase2_timing[cycle_seconds] == 'R':
+            graphics.set_pen(graphics.create_pen(255, 0, 0))
+        graphics.circle(15, 10, 10)
+        # YELLOW
+        graphics.set_pen(graphics.create_pen(15, 15, 0))
+        if phase2_timing[cycle_seconds] == 'Y':
+            graphics.set_pen(graphics.create_pen(255, 255, 0))
+        graphics.circle(15, 31, 10)
+        # GLOBAL TIMER
+        graphics.set_pen(graphics.create_pen(50, 50, 50))
+        draw_text(str(cycle_seconds),32,27,font3x5,-1)
 
+    if scene == 'D':
+        # YELLOW
+        graphics.set_pen(graphics.create_pen(15, 15, 0))
+        if phase2_timing[cycle_seconds] == 'Y':
+            graphics.set_pen(graphics.create_pen(255, 255, 0))
+        graphics.circle(15, 0, 10)
+        # GREEN
+        graphics.set_pen(graphics.create_pen(0, 15, 0))
+        if phase2_timing[cycle_seconds] == 'G':
+            graphics.set_pen(graphics.create_pen(0, 255, 0))
+        graphics.circle(15, 21, 10)
+        # GLOBAL TIMER
+        graphics.set_pen(graphics.create_pen(50, 50, 50))
+        draw_text(str(cycle_seconds),32,27,font3x5,-1)
     # STATUS TEXT
     draw_text(text.upper(),0,20,font3x5)
 
@@ -206,4 +235,5 @@ while True:
 
     # pause for a moment
 #     time.sleep(0.1)
+
 
