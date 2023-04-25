@@ -1,6 +1,6 @@
 import time
 import math
-from cosmic import CosmicUnicorn
+from cosmic import CosmicUnicorn, Channel
 from picographics import PicoGraphics, DISPLAY_COSMIC_UNICORN as DISPLAY
 
 '''
@@ -17,6 +17,37 @@ height = CosmicUnicorn.HEIGHT
 
 seconds = -1
 
+boopety_beepety = cu.synth_channel(0)
+# boopety_beepety.configure(
+#     waveforms=Channel.SQUARE | Channel.SINE,
+#     attack=0.1,
+#     decay=0.1,
+#     sustain=0,
+#     release=0.1,
+#     volume=1.0
+# )
+
+# Configure the beeper waveform and envelope
+boopety_beepety.configure(
+    waveforms=Channel.SINE + Channel.SQUARE,
+    attack=0.05,
+    decay=0.5,
+    sustain=0,
+    release=0,
+    volume=1.0
+)
+boopety_beepety.frequency(262)
+
+cu.play_synth()
+
+last_action = time.ticks_ms()
+
+def debounce(duration=1000):
+    global last_action
+    if time.ticks_ms() - last_action > duration:
+        last_action = time.ticks_ms()
+        return True
+    return False
 
 def gradient(r, g, b):
     for y in range(0, height):
@@ -89,10 +120,14 @@ def outline_text_lower(text):
     graphics.text(text, x, y, -1, 1)
 
 cu.set_brightness(0.5)
+start = time.ticks_ms()
 
 while True:
 
-    time_ms = time.ticks_ms()
+#     elapsed = (time.clock() - start)
+
+    # elapsed
+    time_ms = time.ticks_ms() - start
     if seconds != -1:
         seconds = (time_ms // 1000) % 5
 
@@ -116,14 +151,20 @@ while True:
         text = "Ready"
         gradient(255, 0, 0)
     elif seconds == 2:
+        print("red gradient")
+        text = "Ready"
+        gradient(255, 0, 0)
+    elif seconds == 3:
         print("yellow gradient")
         text = "Set"
         gradient(255, 255, 0)
-    elif seconds == 3:
+    elif seconds == 4:
         print("green gradient")
         text = "Go"
         gradient(0, 255, 0)
-    elif seconds == 4:
+        boopety_beepety.frequency(523)
+
+    elif seconds == 5:
         print("green gradient")
         text = "Go"
         gradient(0, 255, 0)
@@ -133,6 +174,7 @@ while True:
     elif seconds == -1:
         print("gray gradient")
         grid_gradient(100, 100, 100)
+        boopety_beepety.frequency(131)
 
     if cu.is_pressed(CosmicUnicorn.SWITCH_A):
         text = "Start"
@@ -165,5 +207,8 @@ while True:
 
     outline_text(text)
     outline_text_lower(timer_text)
-
+    
+    if debounce(1000):
+        boopety_beepety.trigger_attack()
     cu.update(graphics)
+    time.sleep(0.1)
