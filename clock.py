@@ -16,7 +16,7 @@ import network
 import ntptime
 from cosmic import CosmicUnicorn
 from picographics import PicoGraphics, DISPLAY_COSMIC_UNICORN as DISPLAY
-
+from bitmap_fonts import font5x9
 try:
     from secrets import WIFI_SSID, WIFI_PASSWORD
     wifi_available = True
@@ -25,16 +25,50 @@ except ImportError:
     wifi_available = False
 
 
+# constant for wakeup hour of green color
+WAKEUP_HOUR = 6
+UTC_OFFSET_HOUR = -7
+
 # constants for controlling the background colour throughout the day
-MIDDAY_HUE = 1.1
-MIDNIGHT_HUE = 0.8
-HUE_OFFSET = -0.1
+MIDDAY_HUE = 0.10   # 0.15
+MIDNIGHT_HUE = 0 # 0
+HUE_OFFSET = 0.0
 
 MIDDAY_SATURATION = 1.0
 MIDNIGHT_SATURATION = 1.0
 
 MIDDAY_VALUE = 0.8
-MIDNIGHT_VALUE = 0.3
+MIDNIGHT_VALUE = 0.8
+
+# FONT LOGIC
+
+# DRAW A SINGLE BITMAP FONT CHARACTER
+@micropython.native  # noqa: F821
+def draw_char(d,x,y,f):
+    # LOOP THROUGH ROWS
+    for i in range(f[d]["h"]):
+        # LOOP THROUGH COLUMNS
+        for j in range(f[d]["w"]):
+            # IF THIS BIT IS SET THEN DRAW A PIXEL
+            if f[d]["data"] & (0b1 << ((i*f[d]["w"])+j)):
+                graphics.pixel(f[d]["w"]-1-j+x,f[d]["h"]-1-i+y)
+
+# DRAW A STRING WITH BITMAP FONT
+@micropython.native  # noqa: F821
+def draw_text(s,x,y,f,d=1):
+    
+    # LEFT JUSTIFIED
+    if d == 1:
+        for i in range(len(s)):
+            draw_char(s[i],x,y,f)
+            x += f[s[i]]["w"] + f[s[i]]["s"]
+    else:
+    # RIGHT JUSTIFIED
+        for i in reversed(range(len(s))):
+            x -= f[s[i]]["w"]
+            draw_char(s[i],x,y,f)
+            x -= f[s[i]]["s"]
+
 
 
 # create cosmic object and graphics surface for drawing
@@ -110,6 +144,20 @@ def outline_text(text, x, y):
     graphics.set_pen(WHITE)
     graphics.text(text, x, y, -1, 1)
 
+# function for drawing outlined text
+def outline_text_custom_font(text, x, y, font):
+    graphics.set_pen(BLACK)
+    draw_text(text, x - 1, y - 1, font)
+    draw_text(text, x, y - 1, font)
+    draw_text(text, x + 1, y - 1, font)
+    draw_text(text, x - 1, y, font)
+    draw_text(text, x + 1, y, font)
+    draw_text(text, x - 1, y + 1, font)
+    draw_text(text, x, y + 1, font)
+    draw_text(text, x + 1, y + 1, font)
+
+    graphics.set_pen(WHITE)
+    draw_text(text, x, y, font)
 
 # Connect to wifi and synchronize the RTC time from NTP
 def sync_time():
@@ -151,7 +199,7 @@ def sync_time():
 #
 # We use the IRQ method to detect the button presses to avoid incrementing/decrementing
 # multiple times when the button is held.
-utc_offset = 0
+utc_offset = UTC_OFFSET_HOUR
 
 up_button = machine.Pin(CosmicUnicorn.SWITCH_VOLUME_UP, machine.Pin.IN, machine.Pin.PULL_UP)
 down_button = machine.Pin(CosmicUnicorn.SWITCH_VOLUME_DOWN, machine.Pin.IN, machine.Pin.PULL_UP)
@@ -190,17 +238,24 @@ def redraw_display_if_reqd():
         sat = ((MIDDAY_SATURATION - MIDNIGHT_SATURATION) * percent_to_midday) + MIDNIGHT_SATURATION
         val = ((MIDDAY_VALUE - MIDNIGHT_VALUE) * percent_to_midday) + MIDNIGHT_VALUE
 
+        if hour == WAKEUP_HOUR:
+            hue = 0.3 # green
+
         gradient_background(hue, sat, val,
                             hue + HUE_OFFSET, sat, val)
 
-        clock = "{:02}:{:02}:{:02}".format(hour, minute, second)
+#        clock = "{:02}:{:02}:{:02}".format(hour, minute, second)
+        clock = "{:02}:{:02}".format(hour, minute)
 
         # calculate text position so that it is centred
         w = graphics.measure_text(clock, 1)
         x = int(width / 2 - w / 2 + 1)
         y = 12
+#        graphics.set_pen(WHITE)
 
-        outline_text(clock, x, y)
+#        draw_text(clock,1,10,font5x9)
+    
+        outline_text_custom_font(clock, 3, 10, font5x9)
 
         last_second = second
 
