@@ -16,7 +16,7 @@ import network
 import ntptime
 from cosmic import CosmicUnicorn
 from picographics import PicoGraphics, DISPLAY_COSMIC_UNICORN as DISPLAY
-from bitmap_fonts import font5x9
+from bitfonts import BitFont, font5x9
 try:
     from secrets import WIFI_SSID, WIFI_PASSWORD
     wifi_available = True
@@ -40,40 +40,10 @@ MIDNIGHT_SATURATION = 1.0
 MIDDAY_VALUE = 0.8
 MIDNIGHT_VALUE = 0.8
 
-# FONT LOGIC
-
-# DRAW A SINGLE BITMAP FONT CHARACTER
-@micropython.native  # noqa: F821
-def draw_char(d,x,y,f):
-    # LOOP THROUGH ROWS
-    for i in range(f[d]["h"]):
-        # LOOP THROUGH COLUMNS
-        for j in range(f[d]["w"]):
-            # IF THIS BIT IS SET THEN DRAW A PIXEL
-            if f[d]["data"] & (0b1 << ((i*f[d]["w"])+j)):
-                graphics.pixel(f[d]["w"]-1-j+x,f[d]["h"]-1-i+y)
-
-# DRAW A STRING WITH BITMAP FONT
-@micropython.native  # noqa: F821
-def draw_text(s,x,y,f,d=1):
-    
-    # LEFT JUSTIFIED
-    if d == 1:
-        for i in range(len(s)):
-            draw_char(s[i],x,y,f)
-            x += f[s[i]]["w"] + f[s[i]]["s"]
-    else:
-    # RIGHT JUSTIFIED
-        for i in reversed(range(len(s))):
-            x -= f[s[i]]["w"]
-            draw_char(s[i],x,y,f)
-            x -= f[s[i]]["s"]
-
-
-
 # create cosmic object and graphics surface for drawing
 cu = CosmicUnicorn()
 graphics = PicoGraphics(DISPLAY)
+bitfont = BitFont(graphics)
 
 # create the rtc object
 rtc = machine.RTC()
@@ -128,36 +98,20 @@ def gradient_background(start_hue, start_sat, start_val, end_hue, end_sat, end_v
     for y in range(0, height):
         graphics.pixel(half_width, y)
 
-
-# function for drawing outlined text
-def outline_text(text, x, y):
-    graphics.set_pen(BLACK)
-    graphics.text(text, x - 1, y - 1, -1, 1)
-    graphics.text(text, x, y - 1, -1, 1)
-    graphics.text(text, x + 1, y - 1, -1, 1)
-    graphics.text(text, x - 1, y, -1, 1)
-    graphics.text(text, x + 1, y, -1, 1)
-    graphics.text(text, x - 1, y + 1, -1, 1)
-    graphics.text(text, x, y + 1, -1, 1)
-    graphics.text(text, x + 1, y + 1, -1, 1)
-
-    graphics.set_pen(WHITE)
-    graphics.text(text, x, y, -1, 1)
-
 # function for drawing outlined text
 def outline_text_custom_font(text, x, y, font):
     graphics.set_pen(BLACK)
-    draw_text(text, x - 1, y - 1, font)
-    draw_text(text, x, y - 1, font)
-    draw_text(text, x + 1, y - 1, font)
-    draw_text(text, x - 1, y, font)
-    draw_text(text, x + 1, y, font)
-    draw_text(text, x - 1, y + 1, font)
-    draw_text(text, x, y + 1, font)
-    draw_text(text, x + 1, y + 1, font)
+    bitfont.draw_text(text, x - 1, y - 1, font)
+    bitfont.draw_text(text, x, y - 1, font)
+    bitfont.draw_text(text, x + 1, y - 1, font)
+    bitfont.draw_text(text, x - 1, y, font)
+    bitfont.draw_text(text, x + 1, y, font)
+    bitfont.draw_text(text, x - 1, y + 1, font)
+    bitfont.draw_text(text, x, y + 1, font)
+    bitfont.draw_text(text, x + 1, y + 1, font)
 
     graphics.set_pen(WHITE)
-    draw_text(text, x, y, font)
+    bitfont.draw_text(text, x, y, font)
 
 # Connect to wifi and synchronize the RTC time from NTP
 def sync_time():
