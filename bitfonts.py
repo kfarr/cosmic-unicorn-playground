@@ -16,7 +16,6 @@ class BitFont:
     # DRAW A STRING WITH BITMAP FONT
     @micropython.native  # noqa: F821
     def draw_text(self,s,x,y,f,d=1):
-        print(s)
         # LEFT JUSTIFIED
         if d == 1:
             for i in range(len(s)):
