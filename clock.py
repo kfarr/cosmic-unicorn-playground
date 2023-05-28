@@ -29,16 +29,6 @@ except ImportError:
 WAKEUP_HOUR = 6
 UTC_OFFSET_HOUR = -7
 
-# constants for controlling the background colour throughout the day
-MIDDAY_HUE = 0.10   # 0.15
-MIDNIGHT_HUE = 0 # 0
-HUE_OFFSET = 0.0
-
-MIDDAY_SATURATION = 1.0
-MIDNIGHT_SATURATION = 1.0
-
-MIDDAY_VALUE = 0.8
-MIDNIGHT_VALUE = 0.8
 
 # create cosmic object and graphics surface for drawing
 cu = CosmicUnicorn()
@@ -55,48 +45,12 @@ height = CosmicUnicorn.HEIGHT
 WHITE = graphics.create_pen(255, 255, 255)
 BLACK = graphics.create_pen(0, 0, 0)
 
-
-@micropython.native  # noqa: F821
-def from_hsv(h, s, v):
-    i = math.floor(h * 6.0)
-    f = h * 6.0 - i
-    v *= 255.0
-    p = v * (1.0 - s)
-    q = v * (1.0 - f * s)
-    t = v * (1.0 - (1.0 - f) * s)
-
-    i = int(i) % 6
-    if i == 0:
-        return int(v), int(t), int(p)
-    if i == 1:
-        return int(q), int(v), int(p)
-    if i == 2:
-        return int(p), int(v), int(t)
-    if i == 3:
-        return int(p), int(q), int(v)
-    if i == 4:
-        return int(t), int(p), int(v)
-    if i == 5:
-        return int(v), int(p), int(q)
-
-
-# function for drawing a gradient background
-def gradient_background(start_hue, start_sat, start_val, end_hue, end_sat, end_val):
-    half_width = width // 2
-    for x in range(0, half_width):
-        hue = ((end_hue - start_hue) * (x / half_width)) + start_hue
-        sat = ((end_sat - start_sat) * (x / half_width)) + start_sat
-        val = ((end_val - start_val) * (x / half_width)) + start_val
-        colour = from_hsv(hue, sat, val)
-        graphics.set_pen(graphics.create_pen(int(colour[0]), int(colour[1]), int(colour[2])))
-        for y in range(0, height):
-            graphics.pixel(x, y)
-            graphics.pixel(width - x - 1, y)
-
-    colour = from_hsv(end_hue, end_sat, end_val)
-    graphics.set_pen(graphics.create_pen(int(colour[0]), int(colour[1]), int(colour[2])))
+def gradient(r, g, b):
     for y in range(0, height):
-        graphics.pixel(half_width, y)
+        for x in range(0, width):
+            graphics.set_pen(graphics.create_pen(int((r * (height - y)) / 32), int((g * (height - y)) / 32), int((b * (height - y)) / 32)))
+            graphics.pixel(x, y)
+
 
 # function for drawing outlined text
 def outline_text_custom_font(text, x, y, font):
@@ -183,33 +137,19 @@ def redraw_display_if_reqd():
     year, month, day, wd, hour, minute, second, _ = rtc.datetime()
     if second != last_second:
         hour = (hour + utc_offset) % 24
-        time_through_day = (((hour * 60) + minute) * 60) + second
-        percent_through_day = time_through_day / 86400
-        percent_to_midday = 1.0 - ((math.cos(percent_through_day * math.pi * 2) + 1) / 2)
-        print(percent_to_midday)
-
-        hue = ((MIDDAY_HUE - MIDNIGHT_HUE) * percent_to_midday) + MIDNIGHT_HUE
-        sat = ((MIDDAY_SATURATION - MIDNIGHT_SATURATION) * percent_to_midday) + MIDNIGHT_SATURATION
-        val = ((MIDDAY_VALUE - MIDNIGHT_VALUE) * percent_to_midday) + MIDNIGHT_VALUE
 
         if hour == WAKEUP_HOUR:
-            hue = 0.3 # green
+            gradient(0,255,0)
+        elif hour > WAKEUP_HOUR and hour < WAKEUP_HOUR + 10:
+            gradient(255,255,0)
+        else:
+            gradient(255,0,0)
 
-        gradient_background(hue, sat, val,
-                            hue + HUE_OFFSET, sat, val)
 
-#        clock = "{:02}:{:02}:{:02}".format(hour, minute, second)
         clock = "{:02}:{:02}".format(hour, minute)
 
-        # calculate text position so that it is centred
-        w = graphics.measure_text(clock, 1)
-        x = int(width / 2 - w / 2 + 1)
-        y = 12
-#        graphics.set_pen(WHITE)
-
-#        draw_text(clock,1,10,font5x9)
     
-        outline_text_custom_font(clock, 3, 10, font5x9)
+        outline_text_custom_font(clock, 3, 2, font5x9)
 
         last_second = second
 
