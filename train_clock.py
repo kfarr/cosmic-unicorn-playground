@@ -49,6 +49,7 @@ DARK_RED = graphics.create_pen(30, 0, 0)
 DARK_GRAY = graphics.create_pen(20, 20, 20)
 LIGHT_GRAY = graphics.create_pen(120, 120, 120)
 DARK_CYAN = graphics.create_pen(0, 120, 120)
+YELLOW = graphics.create_pen(255, 255, 0)
 
 def gradient(r, g, b):
     for y in range(0, height):
@@ -138,7 +139,7 @@ def tracks(y=30):
     graphics.line(0, y, 32, y)
     for tie in range(11):
         graphics.set_pen(DARK_YELLOW)
-        graphics.line(3*tie, y+1, 3*tie+2, y+1)
+        graphics.line(4*tie, y+1, 4*tie+2, y+1)
     
 def train(x,y):
     # LEFT FACING
@@ -211,6 +212,33 @@ def sleepface(x,y):
       (x+1, y+2),
       (x, y+1),
     ])
+
+def wakeface(x,y):
+    # ADDS A WAKING FACE TO LEFT FACING TRAIN AT SAME X Y
+    # EYE
+    graphics.set_pen(WHITE)
+    graphics.polygon([
+      (x + 5, y - 2),
+      (x + 7, y - 4),
+      (x + 7, y - 4),
+      (x + 8, y - 2),
+      (x + 7, y - 1),
+      (x + 6, y - 1),
+    ])
+    # PUPIL
+    graphics.set_pen(BLACK)
+    graphics.line(x + 6, y - 2, x + 8, y - 2)
+
+    # MOUTH OPEN SMILE
+    graphics.set_pen(BLACK)
+    graphics.polygon([
+      (x, y),
+      (x+3, y),
+      (x+1, y+2),
+      (x, y+1),
+    ])
+    graphics.line(x + 2, y, x + 4, y)
+
 # Check whether the RTC time has changed and if so redraw the display
 def redraw_display_if_reqd():
     global year, month, day, wd, hour, minute, second, last_second
@@ -222,7 +250,9 @@ def redraw_display_if_reqd():
         if hour == WAKEUP_HOUR:
             gradient(0,255,0)
         elif hour > WAKEUP_HOUR and hour < WAKEUP_HOUR + 10:
-            gradient(255,255,0)
+            gradient(40,40,255)
+            graphics.set_pen(YELLOW)
+            graphics.circle(32, 0, 9)
         else:
             gradient(255,0,0)
 
@@ -235,6 +265,8 @@ def redraw_display_if_reqd():
             littlez(5, 18)
             bigz(0, 13)
             sleepface(7,24)
+        else:
+            wakeface(7,24)
         outline_text_custom_font(clock, 3, 2, font5x9)
 
         last_second = second
