@@ -28,7 +28,7 @@ except ImportError:
 # constant for wakeup hour of green color
 WAKEUP_HOUR = 6
 UTC_OFFSET_HOUR = -7
-
+GLOBAL_STATE_SLEEP = False
 
 # create cosmic object and graphics surface for drawing
 cu = CosmicUnicorn()
@@ -134,14 +134,21 @@ year, month, day, wd, hour, minute, second, _ = rtc.datetime()
 
 last_second = second
 
-def tracks(y=30):
+def tracks(y=29,x_offset=0):
     graphics.set_pen(LIGHT_GRAY)
     graphics.line(0, y, 32, y)
     for tie in range(11):
         graphics.set_pen(DARK_YELLOW)
-        graphics.line(4*tie, y+1, 4*tie+2, y+1)
-    
-def train(x,y):
+        graphics.line(4*tie+x_offset, y+1, 4*tie+2+x_offset, y+1)
+        graphics.line(4*tie+x_offset, y+2, 4*tie+2+x_offset, y+2)
+        graphics.set_pen(BLACK)
+        graphics.line(4*tie+x_offset-2, y+1, 4*tie+2+x_offset-2, y+1)
+        graphics.line(4*tie+x_offset-2, y+2, 4*tie+2+x_offset-2, y+2)
+
+@micropython.native  # noqa: F821
+def train(x,y,dip=False):
+    if dip:
+      y = y + 1
     # LEFT FACING
     # NOSE AND WINDOW FRAME
     graphics.set_pen(DARK_CYAN)
@@ -176,26 +183,32 @@ def train(x,y):
       (x+4, y+4),
     ])
     # WHEELS
+    if dip:
+      y = y - 1
     graphics.set_pen(LIGHT_GRAY)
     graphics.line(x+5, y+4, x+7, y+4)
     graphics.line(x+5, y+5, x+7, y+5)   
     graphics.line(x+9, y+4, x+11, y+4)
     graphics.line(x+9, y+5, x+11, y+5)
 
-def littlez(x,y):
-    graphics.set_pen(LIGHT_GRAY)
-    graphics.line(x, y, x+3, y)
-    graphics.line(x, y+2, x+3, y+2)
-    graphics.set_pen(WHITE)
-    graphics.line(x+2, y, x, y+3)
+def littlez(x,y,visible=True):
+    if visible:
+      graphics.set_pen(LIGHT_GRAY)
+      graphics.line(x, y, x+3, y)
+      graphics.line(x, y+2, x+3, y+2)
+      graphics.set_pen(WHITE)
+      graphics.line(x+2, y, x, y+3)
     
-def bigz(x,y):
-    graphics.set_pen(WHITE)
-    graphics.line(x, y, x+4, y)
-    graphics.line(x+3, y, x, y+3)
-    graphics.line(x, y+3, x+4, y+3)
+def bigz(x,y,visible=True):
+    if visible:
+      graphics.set_pen(WHITE)
+      graphics.line(x, y, x+4, y)
+      graphics.line(x+3, y, x, y+3)
+      graphics.line(x, y+3, x+4, y+3)
     
-def sleepface(x,y):
+def sleepface(x,y,dip=False):
+    if dip:
+      y = y + 1
     # ADDS A SLEEP FACE TO LEFT FACING TRAIN AT SAME X Y
     graphics.set_pen(BLACK)
     # EYE
@@ -213,7 +226,10 @@ def sleepface(x,y):
       (x, y+1),
     ])
 
-def wakeface(x,y):
+@micropython.native  # noqa: F821
+def wakeface(x,y,dip=False):
+    if dip:
+      y = y + 1
     # ADDS A WAKING FACE TO LEFT FACING TRAIN AT SAME X Y
     # EYE
     graphics.set_pen(WHITE)
@@ -241,9 +257,14 @@ def wakeface(x,y):
 
 # Check whether the RTC time has changed and if so redraw the display
 def redraw_display_if_reqd():
+    global GLOBAL_STATE_SLEEP
     global year, month, day, wd, hour, minute, second, last_second
 
     year, month, day, wd, hour, minute, second, _ = rtc.datetime()
+    modulo2 = second % 2
+    modulo4 = second % 4
+    modulo_ms4 = (time.ticks_ms() // 10) % 4
+    
     if second != last_second:
         hour = (hour + utc_offset) % 24
 
@@ -256,21 +277,23 @@ def redraw_display_if_reqd():
         else:
             gradient(255,0,0)
 
-
         clock = "{:02}:{:02}".format(hour, minute)
         
-        tracks()
-        train(7, 24)
         if hour < WAKEUP_HOUR or hour >= WAKEUP_HOUR + 10:
-            littlez(5, 18)
-            bigz(0, 13)
-            sleepface(7,24)
+            train(7, 23, modulo4)
+            littlez(5, 18, modulo4 > 0)
+            bigz(0, 13, modulo4 > 1)
+            sleepface(7,23, modulo4)
+            tracks()
+            GLOBAL_STATE_SLEEP = True
         else:
-            wakeface(7,24)
+            train(7, 23, modulo2)
+            wakeface(7,23, modulo2)
+            tracks(x_offset=modulo_ms4)
+            GLOBAL_STATE_SLEEP = False
         outline_text_custom_font(clock, 3, 2, font5x9)
 
         last_second = second
-
 
 # set the font
 graphics.set_font("bitmap8")
@@ -289,7 +312,12 @@ while True:
         sync_time()
 
     redraw_display_if_reqd()
-
+    if GLOBAL_STATE_SLEEP:
+      tracks()
+    else:
+      modulo_ms4 = (time.ticks_ms() // 100) % 4
+      tracks(x_offset=modulo_ms4)
+ 
     # update the display
     cu.update(graphics)
 
