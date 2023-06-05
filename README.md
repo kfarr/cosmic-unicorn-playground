@@ -1,10 +1,56 @@
-# Fork of [Cosmic Unicorn MicroPython Examples](https://github.com/pimoroni/pimoroni-pico/tree/main/micropython/examples/cosmic_unicorn) <!-- omit in toc -->
- 
-## Custom Bitmap Fonts for Cosmic Unicorn
-Credit:
-* https://github.com/leswright1977/picofont for 5x9 custom bitmap font example
-* https://github.com/NiVZ78/galactic_unicorn_custom_font for improved bitmap font parser and definition format
+# Cosmic Unicorn Projects
 
+MicroPython demos of custom bitmap fonts, a train-themed "Ok to Wake" clock, and more for the [Pimoroni Cosmic Unicorn LED Matrix with built-in Raspberry Pi Pico W 2040](https://shop.pimoroni.com/products/cosmic-unicorn).
+
+Table of Contents:
+* [Custom Tiny Bitmap Fonts](#custom-tiny-bitmap-fonts-for-cosmic-unicorn)
+* [Ok to Wake Train Clock](#ok-to-wake-train-clock)
+* Traffic Signals
+
+## Custom (Tiny) Bitmap Fonts for Cosmic Unicorn
+
+### Why?
+
+The default bitmap fonts that come PicoGraphics library are awesome, but sometimes you need a smaller font to display lots of numbers and text on LED matrices such as the Cosmic Unicorn.
+
+### What does it look like?
+On the LEFT: default Cosmic Unicorn "picofonts" bitmap fonts, and on the RIGHT: new fonts available via this bitfonts library
+![bitfonts-vs-default](https://github.com/kfarr/cosmic-unicorn-playground/assets/470477/a26af2e1-f391-4e9a-975b-d894382b81e0)
+
+### Usage Example
+1. Upload `bitfonts.py` file to the Pico W
+2. Import in your MicroPython .py project as follows (only import fonts you need for your project)
+```
+from bitfonts import BitFont, font2x5, font3x5, font4x5, font5x9
+```
+
+3. Then, initialise the `bitfont` Class immediately after you initialize `PicoGraphics`:
+```
+# INITIALISE GALACTIC UNICORN
+cu = CosmicUnicorn()
+graphics = PicoGraphics(DISPLAY)
+bitfont = BitFont(graphics)
+```
+
+4. Finally, use the draw_text method to draw the font
+```
+bitfont.draw_text("my text string",0,16,font3x5)
+```
+
+See [this demo project custom_font.py](https://github.com/kfarr/cosmic-unicorn-playground/blob/main/custom_font.py) for an example of a working demo of the custom fonts used on the Cosmic Unicorn.
+
+### Method variables
+
+Function `draw_text` accepts a `str` of the text to be displayed, an `int` of the `x` position (where 0 = leftmost), an `int` of the `y` position (where 0 = topmost), and a `dict` font array as defined in `bitfonts.py` file [such as this 2x5 font](https://github.com/kfarr/cosmic-unicorn-playground/blob/main/bitfonts.py#L37). 
+
+### Credits
+* Thanks to https://github.com/NiVZ78/galactic_unicorn_custom_font for improved bitmap font parser and definition format
+* Thanks to https://github.com/leswright1977/picofont for 5x9 custom bitmap font example
+* This repo is originally forked from Pimoroni's [Cosmic Unicorn MicroPython Examples](https://github.com/pimoroni/pimoroni-pico/tree/main/micropython/examples/cosmic_unicorn)
+
+## Ok to Wake Train Clock
+
+To be written. See twitter for now: https://twitter.com/kfarr/status/1663203677828694022 and this file: https://github.com/kfarr/cosmic-unicorn-playground/blob/main/train_clock.py
 
 ===
 Original readme:
