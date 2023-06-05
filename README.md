@@ -43,6 +43,12 @@ See [this demo project custom_font.py](https://github.com/kfarr/cosmic-unicorn-p
 
 Function `draw_text` accepts a `str` of the text to be displayed, an `int` of the `x` position (where 0 = leftmost), an `int` of the `y` position (where 0 = topmost), and a `dict` font array as defined in `bitfonts.py` file [such as this 2x5 font](https://github.com/kfarr/cosmic-unicorn-playground/blob/main/bitfonts.py#L37). 
 
+### ⚠️ WARNING - only numbers 0-9 are supported across all fonts
+
+ONLY `0 1 2 3 4 5 6 7 8 9` characters are supported across all fonts. Some fonts include all alphanumeric characters. Some fonts include delimiters and limited emojis.
+
+When using in your project, first refer to [the source code to see which characaters are supported](https://github.com/kfarr/cosmic-unicorn-playground/blob/main/bitfonts.py#L31). It is very easy to add your own characters. Then, please contribute them back to this repo! :)
+
 ### Credits
 * Thanks to https://github.com/NiVZ78/galactic_unicorn_custom_font for improved bitmap font parser and definition format
 * Thanks to https://github.com/leswright1977/picofont for 5x9 custom bitmap font example
