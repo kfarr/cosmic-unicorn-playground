@@ -11,11 +11,11 @@ Table of Contents:
 
 ### Why?
 
-The default bitmap fonts that come PicoGraphics library are awesome, but sometimes you need a smaller font to display lots of numbers and text on LED matrices such as the Cosmic Unicorn.
+The default bitmap fonts that come PicoGraphics library are awesome, but sometimes you need a smaller font to display lots of numbers and text on LED matrices such as the Cosmic Unicorn. Further, some PicoGraphics fonts are variable width which cause display issues for timers and clocks.
 
 ### What does it look like?
-On the LEFT: default Cosmic Unicorn "picofonts" bitmap fonts, and on the RIGHT: new fonts available via this bitfonts library
-![bitfonts-vs-default](https://github.com/kfarr/cosmic-unicorn-playground/assets/470477/a26af2e1-f391-4e9a-975b-d894382b81e0)
+LEFT: default Cosmic Unicorn bitmap fonts, RIGHT: new fonts available via this bitfonts library
+<img src="https://github.com/kfarr/cosmic-unicorn-playground/assets/470477/a26af2e1-f391-4e9a-975b-d894382b81e0" width=600 />
 
 ### Usage Example
 1. Upload `bitfonts.py` file to the Pico W
