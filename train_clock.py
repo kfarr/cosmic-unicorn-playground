@@ -134,6 +134,7 @@ year, month, day, wd, hour, minute, second, _ = rtc.datetime()
 
 last_second = second
 
+@micropython.native  # noqa: F821
 def tracks(y=29,x_offset=0):
     graphics.set_pen(LIGHT_GRAY)
     graphics.line(0, y, 32, y)
@@ -206,6 +207,7 @@ def bigz(x,y,visible=True):
       graphics.line(x+3, y, x, y+3)
       graphics.line(x, y+3, x+4, y+3)
     
+@micropython.native  # noqa: F821
 def sleepface(x,y,dip=False):
     if dip:
       y = y + 1
@@ -277,26 +279,25 @@ def redraw_display_if_reqd():
         else:
             gradient(255,0,0)
 
-        clock = "{:02}:{:02}".format(hour, minute)
         
         if hour < WAKEUP_HOUR or hour >= WAKEUP_HOUR + 10:
             train(7, 23, modulo4)
             littlez(5, 18, modulo4 > 0)
             bigz(0, 13, modulo4 > 1)
             sleepface(7,23, modulo4)
-            tracks()
+            #tracks()
             GLOBAL_STATE_SLEEP = True
         else:
             train(7, 23, modulo2)
             wakeface(7,23, modulo2)
-            tracks(x_offset=modulo_ms4)
+            #tracks(x_offset=modulo_ms4)
             GLOBAL_STATE_SLEEP = False
+
+        clock = "{:02}:{:02}".format(hour, minute)
         outline_text_custom_font(clock, 3, 2, font5x9)
 
         last_second = second
 
-# set the font
-graphics.set_font("bitmap8")
 cu.set_brightness(0.5)
 
 sync_time()
